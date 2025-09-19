@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <stdbool.h>
 
 // Single Contact 
 typedef struct{
@@ -68,6 +69,55 @@ void addContact(){
 
 void removeContact() {
 
+    FILE *pFile = fopen("contactList.txt", "r+");
+
+    if(pFile == NULL){
+        printf("Could not open file.\n");
+        endProgram(1);
+    }
+
+    char contactName[25]; 
+
+    printf("Who you want to delate form contact (name)? ");
+    scanf(" %24[^\n]", contactName);
+
+    FILE *pTempFile = fopen("temp.txt", "w");
+
+    if(pTempFile == NULL){
+        printf("Could not open file.\n");
+        endProgram(1);
+    }
+
+    char line[100];
+    bool found = false;
+
+    while(fgets(line, sizeof(line), pFile)){ 
+        line[strcspn(line, "\n")] = 0; // clean out of \n
+        char *name = strtok(line, ","); // devides line onto two part with comma, first call returns first part
+        if(strcmp(name, contactName) == 0) { // strcmp return 0 if both params are equal
+            found = true;
+            continue;
+        }
+        fprintf(pTempFile, "%s,%s\n", name, strtok(NULL, ","));
+    }
+
+    // closing both files
+    fclose(pTempFile);
+    fclose(pFile);
+
+    // remove old file and rename temp file for main file 
+    remove("contactList.txt");
+    rename("temp.txt", "contactList.txt");
+
+    printf("\n");
+
+    if(found) {
+        printf("Contact delated.\n");
+    } 
+    else
+    {
+        printf("Contact not found.\n");
+    }
 }
 
 ////void editContact() {
