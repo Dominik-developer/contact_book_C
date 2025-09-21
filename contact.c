@@ -4,18 +4,22 @@
 #include <unistd.h>
 #include <stdbool.h>
 
+#define MAX_NAME_LEN 25
+#define MAX_PHONE_LEN 20
+#define MAX_LINE_LEN 50
+
 // Single Contact 
 typedef struct{
-    char name[25];
-    char phone [15];
+    char name[MAX_NAME_LEN];
+    char phone [MAX_PHONE_LEN];
 } Contact;
-
 
 // declaration of function
 void addContact();
 
 void showAllContacts();
 void removeContact();
+void editContact();
 void mainMenu();
 int endProgram(int endCode);
 
@@ -52,8 +56,8 @@ void addContact(){
     // operation of adding new contact
     printf("Enter name: ");
     scanf(" %24[^\n]", newContact->name);
-    printf("Enter phone: ");
-    scanf(" %14[^\n]", newContact->phone);
+    printf("Enter phone number: ");
+    scanf(" %19[^\n]", newContact->phone);
     
     fprintf(pFile, "%s,%s\n",newContact->name, newContact->phone);
 
@@ -76,9 +80,9 @@ void removeContact() {
         endProgram(1);
     }
 
-    char contactName[25]; 
+    char contactName[MAX_NAME_LEN]; 
 
-    printf("Who you want to delate form contact (name)? ");
+    printf("Who you want to delete form contact list (name)? ");
     scanf(" %24[^\n]", contactName);
 
     FILE *pTempFile = fopen("temp.txt", "w");
@@ -88,7 +92,7 @@ void removeContact() {
         endProgram(1);
     }
 
-    char line[100];
+    char line[MAX_LINE_LEN];
     bool found = false;
 
     while(fgets(line, sizeof(line), pFile)){ 
@@ -112,7 +116,7 @@ void removeContact() {
     printf("\n");
 
     if(found) {
-        printf("Contact delated.\n");
+        printf("Contact deleted.\n");
     } 
     else
     {
@@ -120,9 +124,68 @@ void removeContact() {
     }
 }
 
-////void editContact() {
-////
-////}
+void editContact() {
+
+    FILE *pFile = fopen("contactList.txt","r");
+
+    if(pFile == NULL){
+        printf("Could not open file.\n");
+        endProgram(1);
+    }
+
+    FILE *pTempFile = fopen("temp.txt", "w");
+
+    if(pTempFile == NULL){
+        printf("Could not open file.\n");
+        endProgram(1);
+    }
+
+    char contactName[MAX_NAME_LEN]; 
+
+    char newName[MAX_NAME_LEN];
+    char newPhone[MAX_PHONE_LEN];
+
+    printf("Which contact do you want to edit (name)? ");
+    scanf(" %24[^\n]", contactName);
+
+    char line[MAX_LINE_LEN];
+    bool found = false;
+
+    while(fgets(line, sizeof(line), pFile)){ 
+        line[strcspn(line, "\n")] = 0;
+        char *name = strtok(line, ","); 
+        char *phone = strtok(NULL, ",");
+        if (phone == NULL) phone = "";
+        if(strcmp(name, contactName) == 0) { 
+            found = true;
+
+            printf("Enter new name: ");
+            scanf(" %24[^\n]", newName);
+            printf("Enter new phone number: ");
+            scanf(" %19[^\n]", newPhone);
+
+            fprintf(pTempFile, "%s,%s\n", newName, newPhone);
+            continue;
+        }
+        fprintf(pTempFile, "%s,%s\n", name, phone);
+    }
+
+    fclose(pTempFile);
+    fclose(pFile);
+
+    remove("contactList.txt");
+    rename("temp.txt", "contactList.txt");
+
+    printf("\n");
+
+    if(found) {
+        printf("Contact edited.\n");
+    } 
+    else
+    {
+        printf("Contact not found.\n");
+    }
+}
 
 
 // ALL CONTACT FUNCTIONS 
@@ -135,7 +198,7 @@ void showAllContacts(){
         endProgram(1);
     }
 
-    char line[50];
+    char line[MAX_LINE_LEN];
 
     while(fgets(line, sizeof(line), pFile)){
 
@@ -181,7 +244,7 @@ void mainMenu() {
         printf("1 - Show contact list\n");
         printf("2 - Add new contact\n");
         printf("3 - Remove contact\n");
-        ////printf("4 - Edit contact\n");
+        printf("4 - Edit contact\n");
         printf("===========================\n");
         printf("Choose action: ");
         scanf("%d", &choice);
@@ -212,10 +275,11 @@ void mainMenu() {
                 removeContact();
                 break;
 
-            ////case 4:
-                ////printf("Editing contact...\n");
-                ////editContact();
-                ////break;
+            case 4:
+                //printf("Editing contact...\n");
+                printf("\n");
+                editContact();
+                break;
 
             default:
                 printf("Invalid option!\n");
