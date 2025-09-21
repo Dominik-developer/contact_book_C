@@ -22,6 +22,7 @@ void removeContact();
 void editContact();
 void mainMenu();
 int endProgram(int endCode);
+bool validatePhone(const char *phone);
 
 
 //====== MAIN ======
@@ -56,8 +57,15 @@ void addContact(){
     // operation of adding new contact
     printf("Enter name: ");
     scanf(" %24[^\n]", newContact->name);
-    printf("Enter phone number: ");
-    scanf(" %19[^\n]", newContact->phone);
+
+    do {
+        printf("Enter phone number: ");
+        scanf(" %19[^\n]", newContact->phone);
+
+        if(!validatePhone(newContact->phone)) {
+            printf("Invalid phone number! Use only digits, spaces, or '+' sign.\n");
+        }
+    } while(!validatePhone(newContact->phone));
     
     fprintf(pFile, "%s,%s\n",newContact->name, newContact->phone);
 
@@ -161,9 +169,16 @@ void editContact() {
 
             printf("Enter new name: ");
             scanf(" %24[^\n]", newName);
-            printf("Enter new phone number: ");
-            scanf(" %19[^\n]", newPhone);
 
+            do {
+                 printf("Enter new phone number: ");
+                scanf(" %19[^\n]", newPhone);
+
+                if(!validatePhone(newPhone)){
+                    printf("Invalid phone number! Use only digits, spaces, or '+' sign.\n");
+                }
+            } while (!validatePhone(newPhone));
+            
             fprintf(pTempFile, "%s,%s\n", newName, newPhone);
             continue;
         }
@@ -287,6 +302,20 @@ void mainMenu() {
     }
 }
 
+bool validatePhone(const char *phone) { 
+    // using const because i dont change value of var. thru function 
+
+    if(phone[0] == '\0'){
+        return false;
+    } 
+
+    for(int i = 0; phone[i] != '\0' ; i++) {
+        if(!(phone[i] == '+' || phone[i] == ' ' || (phone[i] >= '0' && phone[i] <= '9'))) {
+            return false;
+        }
+    }
+    return true;
+}
 
 
 //EOF
